@@ -1,5 +1,13 @@
 package energy.flexcity.energytest.refactoring;
 
+import energy.flexcity.energytest.refactoring.readers.FtpReader;
+import energy.flexcity.energytest.refactoring.readers.HttpJsonReader;
+import energy.flexcity.energytest.refactoring.readers.HttpXmlReader;
+import energy.flexcity.energytest.refactoring.readers.Reader;
+import energy.flexcity.energytest.refactoring.transformers.BooleanStringCompare;
+import energy.flexcity.energytest.refactoring.transformers.BooleanThreshold;
+import energy.flexcity.energytest.refactoring.transformers.NumberCoefficient;
+
 import java.util.List;
 
 public class SubscriptionHandler {
@@ -8,101 +16,58 @@ public class SubscriptionHandler {
         new SubscriptionHandler().perform(Data.SUBSCRIPTIONS);
     }
 
-    private void perform(List<Subscription> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println("Start treatment of subscription " + list.get(i).componentName);
+    private void perform(List<Subscription> subscriptions) {
+        for (Subscription subscription : subscriptions) {
+            System.out.println("Start treatment of subscription " + subscription.getComponentName());
 
-            if (list.get(i).active == true) {
-                Object o;
-                if (list.get(i).protocol == "HTTP/JSON") {
-                    o = new HttpJsonReader().readValue(list.get(i).componentName);
-                } else if (list.get(i).protocol == "HTTP/XML") {
-                    o = new HttpXmlReader().readValue(list.get(i).componentName);
-                } else {
-                    o = new FtpReader().readValue(list.get(i).componentName);
-                }
-                System.out.println("\tValue received is " + o);
-
-                if (list.get(i).numberTransformationCoeff != null) {
-                    o = (Double) o * list.get(i).numberTransformationCoeff;
-                } else if (list.get(i).booleanTransformationThreshold != null) {
-                    o = (Double) o > list.get(i).booleanTransformationThreshold;
-                } else if (list.get(i).stringTransformationToCompare != null) {
-                    o = o.equals(list.get(i).stringTransformationToCompare);
-                }
-                System.out.println("\tAfter transformation value is " + o);
-
-                boolean r;
-                if (o instanceof Boolean) {
-                    r = new Notifier().notifyBoolean((Boolean) o, list.get(i).notifyUrl);
-                } else {
-                    r = new Notifier().notifyDouble((Double) o, list.get(i).notifyUrl);
-                }
-
-                // if it did not work, try again
-                if (!r) {
-                    System.out.println("\tNotification failed, will try again");
-                    if (o instanceof Boolean) {
-                        r = new Notifier().notifyBoolean((Boolean) o, list.get(i).notifyUrl);
-                    } else {
-                        r = new Notifier().notifyDouble((Double) o, list.get(i).notifyUrl);
-                    }
-                }
-
-                if (!r) {
-                    System.out.println("\tCould not notify.");
-                } else {
-                    System.out.println("\tNotification succeeded.");
-                }
-            } else {
+            if (!subscription.isActive()) {
                 System.out.println(
-                    "\tSubscription " + list.get(i).componentName + " is inactive, won't send notification.");
+                        "\tSubscription " + subscription.getComponentName() + " is inactive, won't send notification.");
+                continue;
+            }
+
+            Reader reader;
+            if (subscription.getProtocol() == Protocol.HTTP_JSON) {
+                reader = new HttpJsonReader();
+            } else if (subscription.getProtocol() == Protocol.HTTP_XML) {
+                reader = new HttpXmlReader();
+            } else {
+                reader = new FtpReader();
+            }
+            reader.readValue();
+
+            System.out.println("\tValue received is " + reader.getValue());
+
+            Object o = reader.getValue();
+            if (subscription.getNumberTransformationCoeff() != null) {
+                o = reader.transform(new NumberCoefficient(subscription.getNumberTransformationCoeff()));
+            } else if (subscription.getBooleanTransformationThreshold() != null) {
+                o = reader.transform(new BooleanThreshold(subscription.getBooleanTransformationThreshold()));
+            } else if (subscription.getStringTransformationToCompare() != null) {
+                o = reader.transform(new BooleanStringCompare(subscription.getStringTransformationToCompare()));
+            }
+            System.out.println("\tAfter transformation value is " + o);
+
+            boolean isNotificationSent = this.notify(o, subscription);
+            // if it did not work, try again
+            if (!isNotificationSent) {
+                System.out.println("\tNotification failed, will try again");
+                isNotificationSent = this.notify(o, subscription);
+            }
+
+            if (!isNotificationSent) {
+                System.out.println("\tCould not notify.");
+            } else {
+                System.out.println("\tNotification succeeded.");
             }
         }
     }
 
-    static class Subscription {
-        public String protocol;
-        public String notifyUrl;
-        public String componentName;
-        public Double numberTransformationCoeff;
-        public Double booleanTransformationThreshold;
-        public String stringTransformationToCompare;
-        public boolean active;
-
-        public Subscription(
-            String protocol,
-            String notifyUrl,
-            String componentName,
-            Double numberTransformationCoeff,
-            Double booleanTransformationThreshold,
-            String stringTransformationToCompare,
-            boolean active) {
-            this.protocol = protocol;
-            this.notifyUrl = notifyUrl;
-            this.componentName = componentName;
-            this.numberTransformationCoeff = numberTransformationCoeff;
-            this.booleanTransformationThreshold = booleanTransformationThreshold;
-            this.stringTransformationToCompare = stringTransformationToCompare;
-            this.active = active;
-        }
-    }
-
-    class HttpJsonReader {
-        public Object readValue(String componentName) {
-            return 3.5;
-        }
-    }
-
-    class HttpXmlReader {
-        public Object readValue(String componentName) {
-            return 2.6;
-        }
-    }
-
-    class FtpReader {
-        public Object readValue(String componentName) {
-            return "UP";
+    private boolean notify(Object o, Subscription subscription) {
+        if (o instanceof Boolean) {
+            return new Notifier().notifyBoolean((Boolean) o, subscription.getNotifyUrl());
+        } else {
+            return new Notifier().notifyDouble((Double) o, subscription.getNotifyUrl());
         }
     }
 }

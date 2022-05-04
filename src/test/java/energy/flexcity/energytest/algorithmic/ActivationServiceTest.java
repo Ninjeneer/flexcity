@@ -46,7 +46,7 @@ class ActivationServiceTest {
 
         List<Site> sitesToShutdown = this.activationService.getSitesToActivate(availableSites, 1, WeekDay.MONDAY);
         assertEquals(1, sitesToShutdown.size());
-        assertEquals(availableSites.get(0), sitesToShutdown.get(0));
+        assertEquals(availableSites.get(1), sitesToShutdown.get(0));
     }
 
     @Test
