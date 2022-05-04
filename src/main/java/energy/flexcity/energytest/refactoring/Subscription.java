@@ -1,29 +1,25 @@
 package energy.flexcity.energytest.refactoring;
 
-public class Subscription {
+import energy.flexcity.energytest.refactoring.transformers.Transformer;
+
+public class Subscription<T, U> {
 
     private final Protocol protocol;
     private final String notifyUrl;
     private final String componentName;
-    private final Double numberTransformationCoeff;
-    private final Double booleanTransformationThreshold;
-    private final String stringTransformationToCompare;
+    private final Transformer<T, U> transformer;
     private final boolean active;
 
     public Subscription(
             Protocol protocol,
             String notifyUrl,
             String componentName,
-            Double numberTransformationCoeff,
-            Double booleanTransformationThreshold,
-            String stringTransformationToCompare,
+            Transformer<T, U> transformer,
             boolean active) {
         this.protocol = protocol;
         this.notifyUrl = notifyUrl;
         this.componentName = componentName;
-        this.numberTransformationCoeff = numberTransformationCoeff;
-        this.booleanTransformationThreshold = booleanTransformationThreshold;
-        this.stringTransformationToCompare = stringTransformationToCompare;
+        this.transformer = transformer;
         this.active = active;
     }
 
@@ -39,16 +35,8 @@ public class Subscription {
         return componentName;
     }
 
-    public Double getNumberTransformationCoeff() {
-        return numberTransformationCoeff;
-    }
-
-    public Double getBooleanTransformationThreshold() {
-        return booleanTransformationThreshold;
-    }
-
-    public String getStringTransformationToCompare() {
-        return stringTransformationToCompare;
+    public U transform(T value) {
+        return this.transformer.transform(value);
     }
 
     public boolean isActive() {

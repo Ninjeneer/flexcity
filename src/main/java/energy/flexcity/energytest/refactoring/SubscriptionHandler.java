@@ -4,9 +4,6 @@ import energy.flexcity.energytest.refactoring.readers.FtpReader;
 import energy.flexcity.energytest.refactoring.readers.HttpJsonReader;
 import energy.flexcity.energytest.refactoring.readers.HttpXmlReader;
 import energy.flexcity.energytest.refactoring.readers.Reader;
-import energy.flexcity.energytest.refactoring.transformers.BooleanStringCompare;
-import energy.flexcity.energytest.refactoring.transformers.BooleanThreshold;
-import energy.flexcity.energytest.refactoring.transformers.NumberCoefficient;
 
 import java.util.List;
 
@@ -18,41 +15,31 @@ public class SubscriptionHandler {
 
     private void perform(List<Subscription> subscriptions) {
         for (Subscription subscription : subscriptions) {
+            // No external libraries so I won't change it, but the use of a real logger is better than using native prints
             System.out.println("Start treatment of subscription " + subscription.getComponentName());
 
+            // Do not process if the subscription is inactive
             if (!subscription.isActive()) {
                 System.out.println(
                         "\tSubscription " + subscription.getComponentName() + " is inactive, won't send notification.");
                 continue;
             }
 
-            Reader reader;
-            if (subscription.getProtocol() == Protocol.HTTP_JSON) {
-                reader = new HttpJsonReader();
-            } else if (subscription.getProtocol() == Protocol.HTTP_XML) {
-                reader = new HttpXmlReader();
-            } else {
-                reader = new FtpReader();
-            }
-            reader.readValue();
-
+            // Read the component value
+            Reader reader = this.readComponentValue(subscription);
             System.out.println("\tValue received is " + reader.getValue());
 
-            Object o = reader.getValue();
-            if (subscription.getNumberTransformationCoeff() != null) {
-                o = reader.transform(new NumberCoefficient(subscription.getNumberTransformationCoeff()));
-            } else if (subscription.getBooleanTransformationThreshold() != null) {
-                o = reader.transform(new BooleanThreshold(subscription.getBooleanTransformationThreshold()));
-            } else if (subscription.getStringTransformationToCompare() != null) {
-                o = reader.transform(new BooleanStringCompare(subscription.getStringTransformationToCompare()));
-            }
-            System.out.println("\tAfter transformation value is " + o);
+            // Apply subscription transformation
+            // I am not a fan of Object casting, but I struggled to refactor it without over-over-engineering things
+            Object transformedValue = subscription.transform(reader.getValue());
+            System.out.println("\tAfter transformation value is " + transformedValue);
 
-            boolean isNotificationSent = this.notify(o, subscription);
-            // if it did not work, try again
+            // Send notification
+            boolean isNotificationSent = this.notify(transformedValue, subscription);
+            // If it did not work, try again
             if (!isNotificationSent) {
                 System.out.println("\tNotification failed, will try again");
-                isNotificationSent = this.notify(o, subscription);
+                isNotificationSent = this.notify(transformedValue, subscription);
             }
 
             if (!isNotificationSent) {
@@ -63,11 +50,25 @@ public class SubscriptionHandler {
         }
     }
 
-    private boolean notify(Object o, Subscription subscription) {
-        if (o instanceof Boolean) {
-            return new Notifier().notifyBoolean((Boolean) o, subscription.getNotifyUrl());
+    private boolean notify(Object componentValue, Subscription subscription) {
+        // Same goes for instanceof checks. Resolving the above Object casting would have allow removing it
+        if (componentValue instanceof Boolean) {
+            return new Notifier().notifyBoolean((Boolean) componentValue, subscription.getNotifyUrl());
         } else {
-            return new Notifier().notifyDouble((Double) o, subscription.getNotifyUrl());
+            return new Notifier().notifyDouble((Double) componentValue, subscription.getNotifyUrl());
         }
+    }
+
+    private Reader readComponentValue(Subscription subscription) {
+        Reader reader;
+        if (subscription.getProtocol() == Protocol.HTTP_JSON) {
+            reader = new HttpJsonReader();
+        } else if (subscription.getProtocol() == Protocol.HTTP_XML) {
+            reader = new HttpXmlReader();
+        } else {
+            reader = new FtpReader();
+        }
+        reader.readValue();
+        return reader;
     }
 }
