@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class ActivationService {
 
-    public List<Site> getSitesToActivate(List<Site> sites, double targetPower, WeekDay date) {
+    public List<Site> getSitesToActivate(List<Site> sites, double targetPower, WeekDay date) throws UnreachablePowerRequest {
         List<Site> availableSites = sites.stream()
                 .filter(site -> site.getActivationDays().contains(date)) // Get list of sites available this date
                 .sorted(Comparator.comparingDouble(Site::getActivationCost)) // Sort them ascending by activation cost (All sites have the same power, so only sort by cost)
@@ -16,6 +16,10 @@ public class ActivationService {
 
         double totalPower = availableSites.stream().mapToDouble(Site::getPower).sum();
         double powerToReduce = totalPower - targetPower; // At least this much power must be reduced
+
+        if (totalPower < targetPower) {
+            throw new UnreachablePowerRequest();
+        }
 
         List<Site> toActivate = new ArrayList<>();
         Iterator<Site> iterator = availableSites.iterator();

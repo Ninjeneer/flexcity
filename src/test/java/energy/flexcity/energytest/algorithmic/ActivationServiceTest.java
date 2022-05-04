@@ -17,7 +17,7 @@ class ActivationServiceTest {
     }
 
     @Test
-    void shouldReturnTheOnlySiteWithTargetPowerLower() {
+    void shouldReturnTheOnlySiteWithTargetPowerLower() throws UnreachablePowerRequest {
         List<Site> availableSites = List.of(new Site("A", 10, List.of(WeekDay.MONDAY), 1));
 
         List<Site> sitesToShutdown = this.activationService.getSitesToActivate(availableSites, 0.5, WeekDay.MONDAY);
@@ -26,18 +26,7 @@ class ActivationServiceTest {
     }
 
     @Test
-    void shouldNotReturnSitesForAGivenDay() {
-        List<Site> availableSites = List.of(
-                new Site("A", 10, List.of(WeekDay.MONDAY), 1),
-                new Site("B", 10, List.of(WeekDay.TUESDAY), 1)
-        );
-
-        List<Site> sitesToShutdown = this.activationService.getSitesToActivate(availableSites, 1, WeekDay.WEDNESDAY);
-        assertEquals(0, sitesToShutdown.size());
-    }
-
-    @Test
-    void shouldSelectTheLowerCostForAnActivation() {
+    void shouldSelectTheLowerCostForAnActivation() throws UnreachablePowerRequest {
         List<Site> availableSites = List.of(
                 new Site("A", 10, List.of(WeekDay.MONDAY), 1),
                 new Site("B", 5, List.of(WeekDay.MONDAY, WeekDay.TUESDAY), 1)
@@ -49,7 +38,7 @@ class ActivationServiceTest {
     }
 
     @Test
-    void shouldSelectTheLowerCostsForAnActivationWithMultipleSites() {
+    void shouldSelectTheLowerCostsForAnActivationWithMultipleSites() throws UnreachablePowerRequest {
         List<Site> availableSites = List.of(
                 new Site("A", 10, List.of(WeekDay.MONDAY), 1),
                 new Site("B", 5, List.of(WeekDay.MONDAY, WeekDay.TUESDAY), 1),
@@ -62,5 +51,19 @@ class ActivationServiceTest {
         List<Site> sitesToShutdown = this.activationService.getSitesToActivate(availableSites, 2, WeekDay.MONDAY);
         assertEquals(4, sitesToShutdown.size());
         assertTrue(sitesToShutdown.containsAll(List.of(availableSites.get(0), availableSites.get(1), availableSites.get(3), availableSites.get(4))));
+    }
+
+    @Test
+    void shouldThrowAnExceptionIfTheRequestIsUnreachable() throws UnreachablePowerRequest {
+        List<Site> availableSites = List.of(
+                new Site("A", 10, List.of(WeekDay.MONDAY), 1),
+                new Site("B", 5, List.of(WeekDay.TUESDAY), 1),
+                new Site("C", 20, List.of(WeekDay.WEDNESDAY), 1),
+                new Site("D", 15, List.of(WeekDay.THURSDAY), 1),
+                new Site("E", 1, List.of(WeekDay.FRIDAY), 1),
+                new Site("F", 50, List.of(WeekDay.SATURDAY), 1)
+        );
+
+        assertThrows(UnreachablePowerRequest.class, () -> this.activationService.getSitesToActivate(availableSites, 2, WeekDay.MONDAY));
     }
 }
