@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.flexcity.energytest.crud.domain.activation.adapters.ActivationService;
 import energy.flexcity.energytest.crud.domain.activation.dto.CreateActivationDto;
+import energy.flexcity.energytest.crud.domain.activation.dto.UpdateActivationDto;
 import energy.flexcity.energytest.crud.domain.activation.entity.Activation;
-import energy.flexcity.energytest.crud.domain.activation.exceptions.ActivationDoesNotExist;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -78,9 +78,36 @@ class ActivationControllerTest {
     @Test
     void shouldDeleteAnActivation() throws Exception {
         Activation activation = this.activationService.create(new CreateActivationDto(1000, 1));
-
-        mockMvc.perform(MockMvcRequestBuilders.delete("/activations/" + activation.getId()))
-                .andExpect(status().isOk());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/activations/" + activation.getId())).andExpect(status().isOk());
         mockMvc.perform(MockMvcRequestBuilders.delete("/activations/" + activation.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldNotDeleteAnInvalidActivation() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/activations/xxx")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldUpdateActivation() throws Exception {
+        Activation activation = this.activationService.create(new CreateActivationDto(1000, 1));
+        mockMvc.perform(
+                        MockMvcRequestBuilders.put("/activations/" + activation.getId())
+                                .contentType("application/json")
+                                .content(this.objectMapper.writeValueAsString(new UpdateActivationDto(5000, 2)))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(activation.getId()))
+                .andExpect(jsonPath("duration").value(5000))
+                .andExpect(jsonPath("power").value(2));
+    }
+
+    @Test
+    void shouldNotUpdateInvalidActivation() throws Exception {
+        mockMvc.perform(
+                        MockMvcRequestBuilders.put("/activations/xxx")
+                                .contentType("application/json")
+                                .content(this.objectMapper.writeValueAsString(new UpdateActivationDto(5000, 2)))
+                )
+                .andExpect(status().isNotFound());
     }
 }
