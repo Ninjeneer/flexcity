@@ -1,4 +1,4 @@
-package energy.flexcity.energytest.algorithmic;
+package energy.flexcity.energytest.casestudy.domain.site.entity;
 
 public enum WeekDay {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY

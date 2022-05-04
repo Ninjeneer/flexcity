@@ -1,4 +1,5 @@
-package energy.flexcity.energytest.algorithmic;
+package energy.flexcity.energytest.casestudy.domain.site.entity;
+
 
 import java.util.List;
 
@@ -8,12 +9,14 @@ public class Site {
     private final List<WeekDay> activationDays;
 
     private final double power;
+    private final String commandEndpoint;
 
-    public Site(String name, double activationCost, List<WeekDay> activationDays, double power) {
+    public Site(String name, double activationCost, List<WeekDay> activationDays, double power, String commandEndpoint) {
         this.name = name;
         this.activationCost = activationCost;
         this.activationDays = activationDays;
         this.power = power;
+        this.commandEndpoint = commandEndpoint;
     }
 
     public String getName() {
@@ -30,5 +33,9 @@ public class Site {
 
     public double getPower() {
         return power;
+    }
+
+    public String getCommandEndpoint() {
+        return this.commandEndpoint;
     }
 }

@@ -1,4 +1,4 @@
-package energy.flexcity.energytest.casestudy.infrastructure;
+package energy.flexcity.energytest.casestudy.infrastructure.contact;
 
 public class SmsHandler implements ContactHandler {
 

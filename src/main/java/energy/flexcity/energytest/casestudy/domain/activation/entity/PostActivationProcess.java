@@ -1,2 +1,5 @@
-package energy.flexcity.energytest.casestudy.domain.activation.entity;public interface PostActivationProcess {
+package energy.flexcity.energytest.casestudy.domain.activation.entity;
+
+public interface PostActivationProcess {
+    void process();
 }
