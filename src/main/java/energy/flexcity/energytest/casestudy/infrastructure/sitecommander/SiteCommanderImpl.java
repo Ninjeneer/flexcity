@@ -11,7 +11,8 @@ public class SiteCommanderImpl implements SiteCommander {
 
     /**
      * Send an HTTP request command to a site
-     * @param site targeted site
+     *
+     * @param site    targeted site
      * @param command activation command
      */
     @Override

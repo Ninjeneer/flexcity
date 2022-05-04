@@ -1,6 +1,8 @@
 package energy.flexcity.energytest.refactoring;
 
-/** This class is just a mock Notifier, no need to refactor it. */
+/**
+ * This class is just a mock Notifier, no need to refactor it.
+ */
 public class Notifier {
 
     private static int count = 0;

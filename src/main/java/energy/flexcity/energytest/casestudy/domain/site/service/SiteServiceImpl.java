@@ -9,6 +9,7 @@ import java.util.List;
 public class SiteServiceImpl implements SiteService {
     /**
      * Mocked function
+     *
      * @return List of sites
      */
     @Override

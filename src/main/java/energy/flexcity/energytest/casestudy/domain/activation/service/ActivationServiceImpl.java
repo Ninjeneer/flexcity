@@ -5,8 +5,8 @@ import energy.flexcity.energytest.casestudy.domain.activation.dto.ActivationRequ
 import energy.flexcity.energytest.casestudy.domain.activation.entity.Activation;
 import energy.flexcity.energytest.casestudy.domain.activation.ports.SiteCommander;
 import energy.flexcity.energytest.casestudy.domain.site.adapters.SiteService;
-import energy.flexcity.energytest.casestudy.domain.site.entity.WeekDay;
 import energy.flexcity.energytest.casestudy.domain.site.entity.Site;
+import energy.flexcity.energytest.casestudy.domain.site.entity.WeekDay;
 import energy.flexcity.energytest.casestudy.infrastructure.contact.ContactHandler;
 import energy.flexcity.energytest.casestudy.infrastructure.contact.EmailHandler;
 import energy.flexcity.energytest.casestudy.infrastructure.contact.SmsHandler;
@@ -32,6 +32,7 @@ public class ActivationServiceImpl implements ActivationService {
     /**
      * Handle an activation request
      * Send command and notification to selected sites
+     *
      * @param activationRequest TSO request
      */
     @Override
@@ -54,6 +55,7 @@ public class ActivationServiceImpl implements ActivationService {
 
     /**
      * Same algorithm from "algorithmic" exercise
+     *
      * @param targetPower Power to reach
      * @return list of sites to shut down
      */
@@ -78,6 +80,7 @@ public class ActivationServiceImpl implements ActivationService {
 
     /**
      * Get magically the current day
+     *
      * @return Current WeekDay
      */
     private WeekDay getTodayWeekDay() {
@@ -86,9 +89,10 @@ public class ActivationServiceImpl implements ActivationService {
 
     /**
      * Send a notification to a site owner with every handler registered
+     *
      * @param contactInformation Owner contact information
-     * @param subject Notification subject
-     * @param message Notification content
+     * @param subject            Notification subject
+     * @param message            Notification content
      */
     private void notify(String contactInformation, String subject, String message) {
         this.contactHandlers.forEach(handler -> handler.sendMessage(contactInformation, subject, message));

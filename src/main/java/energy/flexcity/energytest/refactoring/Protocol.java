@@ -6,6 +6,7 @@ public enum Protocol {
     FTP("FTP");
 
     public final String value;
+
     Protocol(String value) {
         this.value = value;
     }

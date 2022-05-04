@@ -1,6 +1,6 @@
 package energy.flexcity.energytest.refactoring.transformers;
 
-public class BooleanThreshold implements Transformer<Double, Boolean>{
+public class BooleanThreshold implements Transformer<Double, Boolean> {
     private final Double reference;
 
     public BooleanThreshold(Double reference) {

@@ -32,7 +32,7 @@ public class ActivationController {
         return new ResponseEntity<>(this.activationService.getById(id), HttpStatus.OK);
     }
 
-    @PostMapping ()
+    @PostMapping()
     public ResponseEntity<Activation> getActivationById(@RequestBody() CreateActivationDto body) {
         return new ResponseEntity<>(this.activationService.create(body), HttpStatus.CREATED);
     }

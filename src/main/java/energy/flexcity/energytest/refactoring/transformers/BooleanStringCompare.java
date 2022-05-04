@@ -1,6 +1,6 @@
 package energy.flexcity.energytest.refactoring.transformers;
 
-public class BooleanStringCompare implements Transformer<String, Boolean>{
+public class BooleanStringCompare implements Transformer<String, Boolean> {
     private final String toCompare;
 
     public BooleanStringCompare(String toCompare) {

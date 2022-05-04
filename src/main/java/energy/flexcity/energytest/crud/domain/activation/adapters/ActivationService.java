@@ -9,8 +9,12 @@ import java.util.List;
 
 public interface ActivationService {
     Activation create(CreateActivationDto dto);
+
     Activation getById(String id);
+
     List<Activation> getAll();
+
     void delete(String id) throws ActivationDoesNotExist;
+
     Activation update(String id, UpdateActivationDto dto) throws ActivationDoesNotExist;
 }
