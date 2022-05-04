@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Activation {
+
     private String id;
     private long receivedTimestamp;
     private long duration;
@@ -42,6 +43,14 @@ public class Activation {
 
     public double getPower() {
         return power;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
     }
 
     @Override
